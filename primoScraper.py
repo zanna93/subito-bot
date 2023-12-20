@@ -12,9 +12,6 @@ import re
 import time as t
 from datetime import datetime, time
 
-LINK = "https://www.subito.it/annunci-italia/vendita/usato/?q=bici"
-PRE_LINK_ANNUNCIO = "https://www.subito.it/biciclette"
-
 """
 parser = argparse.ArgumentParser()
 parser.add_argument("--add", dest='name', help="name of new tracking to be added")
@@ -87,53 +84,69 @@ if __name__ == '__main__':
                 save_queries()
             t.sleep(int(args.delay))
 """
+parser = argparse.ArgumentParser()
+parser.add_argument("--object", dest='object', help="name of new tracking object")
+parser.add_argument("--category", dest='category', help="name of object category")
+args = parser.parse_args()
 
-response = requests.get(LINK)
-response.raise_for_status()
-soup=bs4.BeautifulSoup(response.text, 'html.parser')
-div_annunci=soup.find('div', class_='ListingContainer_col__1TZpb ListingContainer_items__3lMdo col items')
-##p_prezzo=soup.find('p', class_='index-module_price__N7M2x SmallCard-module_price__yERv7 index-module_small__4SyUf')
+if __name__ == '__main__':
 
-a_annunci=div_annunci.find_all('a')
-p_paragraf=div_annunci.find_all('p')
-link_annunci = []
-prezzi_annunci = []
+    ### Setup commands ###
 
-##for p_prezzi in p_paragraf:
-##p_prezzo = str(p_prezzo.get('p'))
-    
-from pprint import pprint
+    if args.object is not None and args.category is not None:
+        """
+        print(datetime.now().strftime("%Y-%m-%d, %H:%M:%S") + " printing current status...")
+        print_queries()
+        """
+        LINK = "https://www.subito.it/annunci-italia/vendita/usato/?q="+args.object
+        PRE_LINK_ANNUNCIO = "https://www.subito.it/"+args.category
+        response = requests.get(LINK)
+        response.raise_for_status()
+        soup=bs4.BeautifulSoup(response.text, 'html.parser')
+        div_annunci=soup.find('div', class_='ListingContainer_col__1TZpb ListingContainer_items__3lMdo col items')
+        ##p_prezzo=soup.find('p', class_='index-module_price__N7M2x SmallCard-module_price__yERv7 index-module_small__4SyUf')
 
-for a_annuncio in a_annunci:
-    link_annuncio = str(a_annuncio.get('href'))
-    price=''.join(text.strip() for text in a_annuncio.p.find_all(text=True, recursive=False))
-    pprint(price)
-    pprint(link_annuncio)
-    if PRE_LINK_ANNUNCIO in link_annuncio:
-        link_annunci.append(link_annuncio)
-        
+        a_annunci=div_annunci.find_all('a')
+        p_paragraf=div_annunci.find_all('p')
+        link_annunci = []
+        prezzi_annunci = []
 
-##pprint(a_annuncio)
-##pprint(''.join(text.strip() for text in a_annuncio.p.find_all(text=True, recursive=False)))
-#pprint(link_annunci)
+        ##for p_prezzi in p_paragraf:
+        ##p_prezzo = str(p_prezzo.get('p'))
 
-#from pprint import pprint
-#print(link_annunci)
+        from pprint import pprint
 
-f = open('risultati_salvati.txt', 'a')
-old_link_annunci = [riga.rstrip('\n') for riga in open('risultati_salvati.txt')]
-new_link_annunci = []
+        for a_annuncio in a_annunci:
+            link_annuncio = str(a_annuncio.get('href'))
+            price =''.join(text.strip() for text in a_annuncio.p.find_all(text=True, recursive=False))
+            price = price[:-2]
+            pprint(price)
+            pprint(link_annuncio)
+            if PRE_LINK_ANNUNCIO in link_annuncio:
+                link_annunci.append(link_annuncio)
 
-for link_annuncio in link_annunci:
-    if link_annuncio not in old_link_annunci:
-        new_link_annunci.append(link_annuncio)
-        f.write('%s\s' % link_annuncio)
-f.close()
 
-#if new_link_annunci:
-#    print('ci sono nuovi risultati')
-#    for new_link in new_link_annunci:
-#        webbrowser.open(new_link)
-#else:
-#    print('nuovo annuncio')
-input('tutto apposto bro')
+        ##pprint(a_annuncio)
+        ##pprint(''.join(text.strip() for text in a_annuncio.p.find_all(text=True, recursive=False)))
+        #pprint(link_annunci)
+
+        #from pprint import pprint
+        #print(link_annunci)
+
+        f = open('risultati_salvati.txt', 'a')
+        old_link_annunci = [riga.rstrip('\n') for riga in open('risultati_salvati.txt')]
+        new_link_annunci = []
+
+        for link_annuncio in link_annunci:
+            if link_annuncio not in old_link_annunci:
+                new_link_annunci.append(link_annuncio)
+                f.write('%s\s' % link_annuncio)
+        f.close()
+
+        #if new_link_annunci:
+        #    print('ci sono nuovi risultati')
+        #    for new_link in new_link_annunci:
+        #        webbrowser.open(new_link)
+        #else:
+        #    print('nuovo annuncio')
+        input('tutto apposto bro')
